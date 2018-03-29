@@ -1,0 +1,6 @@
+framework module Felix {
+  umbrella header "Felix-umbrella.h"
+
+  export *
+  module * { export * }
+}

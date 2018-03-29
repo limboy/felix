@@ -16,9 +16,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1F8ED300ECDB0E950F693366 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		1F8ED300ECDB0E950F693366 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		20F7613D4F201D8767241778 /* Pods-Felix_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Felix_Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-Felix_Tests/Pods-Felix_Tests.release.xcconfig"; sourceTree = "<group>"; };
-		4B70C1C98405D892118AC2EA /* Felix.podspec */ = {isa = PBXFileReference; includeInIndex = 1; name = Felix.podspec; path = ../Felix.podspec; sourceTree = "<group>"; };
+		4B70C1C98405D892118AC2EA /* Felix.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = Felix.podspec; path = ../Felix.podspec; sourceTree = "<group>"; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		6003F58F195388D20070C39A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		6003F591195388D20070C39A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
@@ -30,7 +30,7 @@
 		606FC2411953D9B200FFA9A0 /* Tests-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Tests-Prefix.pch"; sourceTree = "<group>"; };
 		75E08CA0C589476BE79DCD7D /* Pods_Felix_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Felix_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3083049CB8F8C823A6AE3B3 /* Pods-Felix_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Felix_Tests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Felix_Tests/Pods-Felix_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		E1DDDF9741A0E9AA1DFBD748 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		E1DDDF9741A0E9AA1DFBD748 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,11 +149,6 @@
 				CLASSPREFIX = FX;
 				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = lzyy;
-				TargetAttributes = {
-					6003F5AD195388D20070C39A = {
-						TestTargetID = 6003F589195388D20070C39A;
-					};
-				};
 			};
 			buildConfigurationList = 6003F585195388D10070C39A /* Build configuration list for PBXProject "Felix" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -346,7 +341,6 @@
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Felix_Example.app/Felix_Example";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = Debug;
@@ -365,7 +359,6 @@
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Felix_Example.app/Felix_Example";
 				WRAPPER_EXTENSION = xctest;
 			};
 			name = Release;

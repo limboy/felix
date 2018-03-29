@@ -1,0 +1,19 @@
+PODS:
+  - Aspects (1.4.1)
+  - Felix (0.1.0):
+    - Aspects (~> 1.4.1)
+
+DEPENDENCIES:
+  - Felix (from `../`)
+
+EXTERNAL SOURCES:
+  Felix:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Aspects: 7595ba96a6727a58ebcbfc954497fc5d2fdde546
+  Felix: 97d6a7d1efe49e6c49fa69518033ade00123c409
+
+PODFILE CHECKSUM: d6276c0e401ed9290030b196e758609d85d8a9d5
+
+COCOAPODS: 1.2.1

@@ -1,0 +1,27 @@
+{
+  "name": "Felix",
+  "version": "0.1.0",
+  "summary": "A short description of Felix.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/lzyy/Felix",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "lzyy": "limboy.me@gmail.com"
+  },
+  "source": {
+    "git": "https://github.com/lzyy/Felix.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "8.0"
+  },
+  "source_files": "Felix/Classes/**/*",
+  "dependencies": {
+    "Aspects": [
+      "~> 1.4.1"
+    ]
+  }
+}
