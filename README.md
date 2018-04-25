@@ -1,29 +1,40 @@
-# Felix
+## 这是什么
 
-[![CI Status](http://img.shields.io/travis/lzyy/Felix.svg?style=flat)](https://travis-ci.org/lzyy/Felix)
-[![Version](https://img.shields.io/cocoapods/v/Felix.svg?style=flat)](http://cocoapods.org/pods/Felix)
-[![License](https://img.shields.io/cocoapods/l/Felix.svg?style=flat)](http://cocoapods.org/pods/Felix)
-[![Platform](https://img.shields.io/cocoapods/p/Felix.svg?style=flat)](http://cocoapods.org/pods/Felix)
+一个基于 Aspects 的轻量级 iOS Hotfix，核心原理是结合 `Aspects` 自带的动态替换方法加上 OC 原生的动态调用方法的能力，通过 `JSCore` 作为 Bridge 来达到效果。
 
-## Example
+## 特点
+* 基于 `Aspects`，降低审核风险（`Aspects`已在上百款 App 使用），我自己也测试过可以通过审核。
+* 没有 JS 中间层，直接使用 OC 暴露给 JS 的方法。
+* 只支持 id 和 primative 类型的数据。
+* 所有的方法都有 test case 覆盖 (详见 `Tests.m` )。
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+仅作为发生「线上 App 有大问题，又不想发版」时的一个备选项。
 
-## Requirements
+## Demo
 
-## Installation
+更多用法参见 `Tests.m`
 
-Felix is available through [CocoaPods](http://cocoapods.org). To install
-it, simply add the following line to your Podfile:
+Replace Class Selector Return Value
 
-```ruby
-pod 'Felix'
+```objc
+[Felix evalString:@"fixClassMethod('ClassSelectorDemo', 'oneParameterReturn:', function(instance, invo) {invoke(invo); setInvocationReturnValue(invo, 'replaced');})"];
+
+NSString *result = [ClassSelectorDemo oneParameterReturn:@"yes"];
+XCTAssert([result isEqualToString:@"replaced"]);
+
+[Felix evalString:@"fixClassMethod('ClassSelectorDemo', 'onePrimativeNumberParameterReturn:', function(instance, invo){invoke(invo); setInvocationReturnValue(invo, 42);})"];
+
+NSInteger _result = [ClassSelectorDemo onePrimativeNumberParameterReturn:1];
+XCTAssert(_result == 42);
+
+[Felix evalString:@"fixClassMethod('ClassSelectorDemo', 'onePrimativeBooleanParameterReturn:', function(instance, invo){invoke(invo); setInvocationReturnValue(invo, false);})"];
+
+BOOL __result = [ClassSelectorDemo onePrimativeBooleanParameterReturn:YES];
+XCTAssert(!__result);
+
+[Felix evalString:@"fixClassMethod('ClassSelectorDemo', 'oneCustomeObjectParameter:', function(instance, invo){invoke(invo); var obj = callClassMethod('Flager', 'new'); setInvocationReturnValue(invo, obj);})"];
+
+Flager *flager = [Flager new];
+Flager *___result = [ClassSelectorDemo oneCustomeObjectParameter:flager];
+XCTAssert(!___result.flaged);
 ```
-
-## Author
-
-lzyy, limboy.me@gmail.com
-
-## License
-
-Felix is available under the MIT license. See the LICENSE file for more info.
