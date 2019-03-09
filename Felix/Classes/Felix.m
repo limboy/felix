@@ -16,15 +16,15 @@
 
 - (NSString *)felix_MD5 {
     const char * pointer = [self UTF8String];
-    unsigned char md5Buffer[CC_MD5_DIGEST_LENGTH];
-    
-    CC_MD5(pointer, (CC_LONG)strlen(pointer), md5Buffer);
-    
-    NSMutableString *string = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH * 2];
-    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i++)
-        [string appendFormat:@"%02x",md5Buffer[i]];
-    
-    return string;
+    unsigned char result[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(pointer, (CC_LONG)strlen(pointer), result);
+    return [NSString stringWithFormat:
+            @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+            result[0],  result[1],  result[2],  result[3],
+            result[4],  result[5],  result[6],  result[7],
+            result[8],  result[9],  result[10], result[11],
+            result[12], result[13], result[14], result[15]
+            ];
 }
 
 @end
@@ -33,6 +33,7 @@ typedef struct {double d;} __FelixDouble__;
 typedef struct {float f;} __FelixFloat__;
 
 @implementation Felix
+
 + (Felix *)sharedInstance
 {
     static Felix *sharedInstance = nil;
@@ -43,6 +44,7 @@ typedef struct {float f;} __FelixFloat__;
     
     return sharedInstance;
 }
+
 
 + (void)evalString:(NSString *)javascriptString
 {
@@ -114,9 +116,11 @@ typedef struct {float f;} __FelixFloat__;
     } error:nil];
 }
 
-+ (void)_invocation:(NSInvocation *)invo signature:(NSMethodSignature *)sig setArgument:(id)obj atIndex:(NSInteger)index
++ (void)_invocation:(NSInvocation *)invo setArgument:(id)obj atIndex:(NSUInteger)index
 {
-    const char *argumentType = [sig getArgumentTypeAtIndex:index];
+    if (index >= invo.methodSignature.numberOfArguments) { return; }
+
+    const char *argumentType = [invo.methodSignature getArgumentTypeAtIndex:index];
     switch (argumentType[0] == 'r' ? argumentType[1] : argumentType[0]) {
             // 对 primative 类型的处理下
 #define __CALL_ARGTYPE_CASE(_typeString, _type, _selector) \
@@ -141,13 +145,20 @@ break; \
             __CALL_ARGTYPE_CASE('B', BOOL, boolValue)
             
         default:
+        {
             [invo setArgument:&obj atIndex:index];
-            break;
+        } break;
+
+    }
+    if (!invo.argumentsRetained) {
+        [invo retainArguments];
     }
 }
 
 + (void)_invocation:(NSInvocation *)invo setReturnValue:(id)returnValue
 {
+    if (invo.methodSignature.methodReturnLength == 0) { return;}
+
     char returnType[255];
     strcpy(returnType, [invo.methodSignature methodReturnType]);
     
@@ -223,24 +234,24 @@ performSelector:(NSString *)selector
     [invo setSelector:_realSelector];
     
     if (parametersCount >= 1) {
-        [self _invocation:invo signature:sig setArgument:obj1 atIndex:2];
+        [self _invocation:invo setArgument:obj1 atIndex:2];
     }
     if (parametersCount >= 2) {
-        [self _invocation:invo signature:sig setArgument:obj2 atIndex:3];
+        [self _invocation:invo setArgument:obj2 atIndex:3];
     }
     if (parametersCount >= 3) {
-        [self _invocation:invo signature:sig setArgument:obj3 atIndex:4];
+        [self _invocation:invo setArgument:obj3 atIndex:4];
     }
     if (parametersCount >= 4) {
-        [self _invocation:invo signature:sig setArgument:obj4 atIndex:5];
+        [self _invocation:invo setArgument:obj4 atIndex:5];
     }
     if (parametersCount >= 5) {
-        [self _invocation:invo signature:sig setArgument:obj5 atIndex:6];
+        [self _invocation:invo setArgument:obj5 atIndex:6];
     }
-    
+
     [invo invoke];
     
-    if (sig.methodReturnLength) {
+    if (sig.methodReturnLength > 0) {
         char returnType[255];
         strcpy(returnType, [sig methodReturnType]);
         
@@ -257,7 +268,9 @@ performSelector:(NSString *)selector
             if (strncmp(returnType, "@", 1) == 0) {
                 void *result;
                 [invo getReturnValue:&result];
-                
+                if (result == NULL) {
+                    return nil;
+                }
                 //For performance, ignore the other methods prefix with alloc/new/copy/mutableCopy
                 if ([selector isEqualToString:@"alloc"] || [selector isEqualToString:@"new"] ||
                     [selector isEqualToString:@"copy"] || [selector isEqualToString:@"mutableCopy"]) {
@@ -291,11 +304,17 @@ break; \
                         __CALL_RETYPE_CASE__('f', float)
                         __CALL_RETYPE_CASE__('d', double)
                         __CALL_RETYPE_CASE__('B', BOOL)
+
                 }
-                NSLog(@"目前不支持返回除了 id 和 primative type 的其他类型数据");
-                return returnValue;
+                NSLog(@"目前不支持返回除了 id 和 primitive type 的其他类型数据");
+                if (returnValue) {
+                    return returnValue;
+                }
             }
         }
+        void *result;
+        [invo getReturnValue:&result];
+        return (__bridge id)result;
     }
     return nil;
 }
@@ -314,37 +333,38 @@ break; \
 
 + (void)fixIt
 {
-    [self context][@"fixInstanceMethod"] = ^(NSString *instanceName, NSString *selectorName, JSValue *fixImpl) {
+    JSContext *tempContext = [self context];
+    tempContext[@"fixInstanceMethod"] = ^(NSString *instanceName, NSString *selectorName, JSValue *fixImpl) {
         [self _fixWithMethod:NO aspectionOptions:AspectPositionInstead instanceName:instanceName selectorName:selectorName fixImpl:fixImpl];
     };
     
-    [self context][@"fixClassMethod"] = ^(NSString *instanceName, NSString *selectorName, JSValue *fixImpl) {
+    tempContext[@"fixClassMethod"] = ^(NSString *instanceName, NSString *selectorName, JSValue *fixImpl) {
         [self _fixWithMethod:YES aspectionOptions:AspectPositionInstead instanceName:instanceName selectorName:selectorName fixImpl:fixImpl];
     };
     
-    [self context][@"callInstanceMethod"] = ^id(id instance, NSString *selectorName, id obj1, id obj2, id obj3, id obj4, id obj5) {
+    tempContext[@"callInstanceMethod"] = ^id(id instance, NSString *selectorName, id obj1, id obj2, id obj3, id obj4, id obj5) {
         return [self _instance:instance performSelector:selectorName withObject:obj1 withObject:obj2 withObject:obj3 withObject:obj4 withObject:obj5];
     };
     
-    [self context][@"callClassMethod"] = ^id(NSString *className, NSString *selectorName, id obj1, id obj2, id obj3, id obj4, id obj5) {
+    tempContext[@"callClassMethod"] = ^id(NSString *className, NSString *selectorName, id obj1, id obj2, id obj3, id obj4, id obj5) {
         return [self _class:className performSelector:selectorName withObject:obj1 withObject:obj2 withObject:obj3 withObject:obj4 withObject:obj5];
     };
     
-    [self context][@"invoke"] = ^(NSInvocation *invocation) {
+    tempContext[@"invoke"] = ^(NSInvocation *invocation) {
         [invocation invoke];
     };
     
-    [self context][@"setInvocationReturnValue"] = ^(NSInvocation *invocation, JSValue *returnValue) {
+    tempContext[@"setInvocationReturnValue"] = ^(NSInvocation *invocation, JSValue *returnValue) {
         [self _invocation:invocation setReturnValue:returnValue];
     };
     
-    [self context][@"setInvocationParameter"] = ^(NSInvocation *invocation, NSInteger index, id value) {
-        [self _invocation:invocation signature:invocation.methodSignature setArgument:value atIndex:index+2];
+    tempContext[@"setInvocationParameter"] = ^(NSInvocation *invocation, NSInteger index, id value) {
+        [self _invocation:invocation setArgument:value atIndex:index+2];
     };
     
     // helper
-    [[self context] evaluateScript:@"var console = {}"];
-    [self context][@"console"][@"log"] = ^(id message) {
+    [tempContext evaluateScript:@"var console = {}"];
+    tempContext[@"console"][@"log"] = ^(id message) {
         NSLog(@"Javascript log: %@",message);
     };
     
